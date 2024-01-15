@@ -302,5 +302,147 @@ VALUES ('B11','01-02-2017',19,'19-06-2013');
 
 ###Query
 
+1)Display the names of art objects of Dutch origin in chronological order
+```sql
+SELECT TITLE
+FROM ART_OBJECT
+WHERE ORIGIN= 'Dutch'
+ORDER BY TITLE ASC
+```
+2)Display the names of art objects dated before 1980
+```sql
+SELECT TITLE
+FROM ART_OBJECT
+WHERE YEAR < 1980;
+```
 
+3)Display Paintings drawn on Canvas
+111sql
+SELECT ID_NO,TITLE
+FROM ART_OBJECT,PAINTING
+WHERE ART_OBJECT.ID_NO = PAINTING.ART_OBJ_ID and DRAWN_ON='Canvas';
+```
+4)Display the conceptual art objects
+```sql
+SELECT *
+FROM ART_OBJECT
+WHERE STYLE='Conceptual';
+```
+5)Display the names of Art objects and artists of height under 2 m
+```sql
+SELECT TITLE,ARTIST_NAME
+FROM ART_OBJECT,SCULPTURE
+WHERE ART_OBJECT.ID_NO=SCULPTURE.ART_OBJ_ID AND
+         ID_NO IN (SELECT ART_OBJ_ID
+             FROM ART_OBJECT
+             WHERE  HEIGHT<2)
+```
+6)Display the names of artists and the origin of their art object also the date died (if they are not alive)
+```sql
+SELECT ARTIST_NAME,ORIGIN,DATE_DIED
+FROM ART_OBJECT,ARTIST
+WHERE ART_OBJECT.ARTIST_NAME=ARTIST.NAME;
+```
+7)Display the name of art objects and artists of the style ‘Baroque’
+```sql
+SELECT TITLE
+FROM ART_OBJECT
+WHERE STYLE='Baroque';
+SELECT NAME
+FROM ARTIST
+WHERE MAIN_STYLE='Baroque';
+```
+8)Display the art object and their description by the artists from Netherlands
+```sql
+SELECT DESCRIPTION,ID_NO
+FROM ART_OBJECT
+WHERE ARTIST_NAME IN (SELECT NAME
+                                                FROM ARTIST
+                                                 WHERE COUNTRY_OF_ORIGIN = 'Netherlands'
+                                               );
+```
+9)Display the names of oil paintings and their style in descending order of their id_no
+```sql
+SELECT A.TITLE,P.STYLE,A.ID_NO
+FROM ART_OBJECT A,PAINTING P
+WHERE A.ID_NO=P.ART_OBJ_ID
+     AND ART_OBJ_ID IN (SELECT ART_OBJ_ID
+                         FROM PAINTING
+                         WHERE PAINT_TYPE='Oil')
+ORDER BY ART_OBJ_ID DESC
+```
+10)Display the details of the oldest art object (id_no, title, description, year, origin and artist name )
+```sql
+SELECT *
+FROM ART_OBJECT
+WHERE YEAR=(SELECT MIN(YEAR)
+            FROM ART_OBJECT);
 
+```
+11)Display the count of oil paintings and spray paintings
+```sql
+SELECT PAINT_TYPE, COUNT(*) as Total_Count
+FROM PAINTING
+WHERE PAINT_TYPE IN ('Spray', 'Oil')
+GROUP BY PAINT_TYPE;
+```
+12)Add a new art object by Pablo Picasso to the database
+```sql
+INSERT INTO ART_OBJECT (ID_NO, YEAR, TITLE, DESCRIPTION, STYLE, ORIGIN, ARTIST_NAME)
+VALUES (21, 1910, 'The Old Guitarist', 'A painting of an old guitarist', 'Cubism', 'Spain', 'Pablo Picasso');
+```
+13)Display the artists with minimum no of art objects
+```sql
+SELECT ARTIST_NAME
+FROM ART_OBJECT
+GROUP BY ARTIST_NAME
+HAVING COUNT(*)=(SELECT MIN(COUNT(ARTIST_NAME))
+                 FROM ART_OBJECT
+                 GROUP BY ARTIST_NAME
+                 )
+```
+14)Retrieve the title, artist, and start and end dates of all exhibitions
+```sql
+SELECT ART_OBJECT.TITLE, ARTIST.NAME, EXHIBITION.START_DATE, EXHIBITION.END_DATE
+FROM ART_OBJECT
+JOIN ARTIST ON ART_OBJECT.ARTIST_NAME = ARTIST.NAME
+JOIN EXHIBITION ON ART_OBJECT.ID_NO = EXHIBITION.ART_OBJ_ID;
+```
+
+15)Display art objects names borrowed before 2015
+```sql
+SELECT ID_NO,TITLE
+FROM ART_OBJECT 
+JOIN BORROWED_COLLECTION
+ON ART_OBJECT.ID_NO=BORROWED_COLLECTION.ART_OBJ_ID
+WHERE EXTRACT (YEAR FROM TO_DATE(DATE_BORROWED)) < 2015
+```
+16)Display the art object details and collection details if they have any
+```sql
+SELECT ART_OBJECT.ID_NO, ART_OBJECT.TITLE, ART_OBJECT.YEAR, ART_OBJECT.DESCRIPTION, 
+ART_OBJECT.STYLE, ART_OBJECT.ORIGIN, ART_OBJECT.ARTIST_NAME,
+COLLECTION.NAME, COLLECTION.TYPE, COLLECTION.DESCRIPTION, COLLECTION.CONTACT_PERSON, 
+COLLECTION.PHONE, COLLECTION.ADDRESS
+FROM ART_OBJECT
+RIGHT JOIN COLLECTION ON ART_OBJECT.ID_NO = COLLECTION.ART_OBJ_ID;
+```
+17)Display the art objects name which are being exhibited
+```sql
+SELECT TITLE,NAME
+FROM ART_OBJECT,EXHIBITION
+WHERE ART_OBJECT.ID_NO=EXHIBITION.ART_OBJECT_ID
+```
+18)Retrieve permanent art objects of cost below 100000
+```sql
+SELECT *
+FROM ART_OBJECT,PERMANENT_COLLECTION
+WHERE ART_OBJECT.ID_NO=PERMANENT_COLLECTION.ART_OBJ_ID AND COST >100000;
+```
+19)Retrieve art object names which have been returned after 2020
+```sql
+SELECT ID_NO,TITLE
+FROM ART_OBJECT 
+JOIN BORROWED_COLLECTION 
+ON ART_OBJECT.ID_NO=BORROWED_COLLECTION.ART_OBJ_ID
+WHERE EXTRACT (YEAR FROM TO_DATE(DATE_RETURNED)) > 2020
+```
